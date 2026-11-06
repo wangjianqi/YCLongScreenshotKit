@@ -121,7 +121,11 @@ public final class YCLongScreenshotKit {
         var images: [UIImage] = []
         var positions: [CGFloat] = []
         var bufferedPixels: Double = 0
-        let step = max(8, viewport.height - max(0, min(configuration.overlap, viewport.height - 8)))
+        // Navigation bars and self-sizing lazy rows can adjust the actual offset
+        // during layout. Reserve at least half a viewport so those adjustments
+        // do not leave an uncaptured gap between successive frames.
+        let overlap = max(viewport.height / 2, configuration.overlap)
+        let step = max(8, viewport.height - min(overlap, viewport.height - 8))
         var reachedBottom = false
 
         for _ in 0..<configuration.maximumSteps {

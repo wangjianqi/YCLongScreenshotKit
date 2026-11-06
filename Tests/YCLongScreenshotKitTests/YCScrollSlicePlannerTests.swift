@@ -28,6 +28,17 @@ final class YCScrollSlicePlannerTests: XCTestCase {
         ))
     }
 
+    func testLayoutAdjustmentWithinOverlapPreservesCoverage() throws {
+        // A half-screen step plus a large-title/self-sizing layout adjustment.
+        let slices = try YCScrollSlicePlanner.makeSlices(
+            offsets: [-96, 204, 454], viewportHeight: 500
+        )
+        XCTAssertEqual(slices.count, 3)
+        XCTAssertEqual(slices[1].sourceTop, 200, accuracy: 0.001)
+        XCTAssertEqual(slices[2].destinationTop, 800, accuracy: 0.001)
+        XCTAssertEqual(slices[2].destinationTop + slices[2].height, 1050, accuracy: 0.001)
+    }
+
     func testEmptyThrows() {
         XCTAssertThrowsError(try YCScrollSlicePlanner.makeSlices(
             offsets: [], viewportHeight: 500
