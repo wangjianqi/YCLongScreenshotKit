@@ -5,7 +5,12 @@ import UIKit
 @MainActor
 final class YCLongScreenshotIntegrationTests: XCTestCase {
     func testExplicitScrollCaptureRestoresOffsetAndCreatesPNG() async throws {
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 700))
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
+            throw XCTSkip("截图集成测试需要带 UIWindowScene 的 iOS App 测试宿主。")
+        }
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 390, height: 700)
+        defer { window.isHidden = true }
         let vc = UIViewController()
         window.rootViewController = vc
         vc.view.frame = window.bounds
@@ -22,6 +27,8 @@ final class YCLongScreenshotIntegrationTests: XCTestCase {
         }
         window.makeKeyAndVisible()
         scroll.setContentOffset(CGPoint(x: 0, y: 110), animated: false)
+
+        try await Task.sleep(nanoseconds: 100_000_000)
 
         // A transparent scroll view must retain the background composited by its parent.
         let reference = try XCTUnwrap(YCCaptureRendering.snapshot(of: window, scale: 1))

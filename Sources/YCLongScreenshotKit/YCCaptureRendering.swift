@@ -10,14 +10,17 @@ enum YCCaptureRendering {
         format.opaque = true
         let background = (view.backgroundColor ?? UIColor.systemBackground)
             .resolvedColor(with: view.traitCollection)
-        return UIGraphicsImageRenderer(size: view.bounds.size, format: format).image { context in
+        var didRender = false
+        let image = UIGraphicsImageRenderer(size: view.bounds.size, format: format).image { context in
             background.setFill()
             context.fill(CGRect(origin: .zero, size: view.bounds.size))
-            // drawHierarchy catches UIKit/SwiftUI visual effects more accurately than CALayer.render.
-            if !view.drawHierarchy(in: CGRect(origin: .zero, size: view.bounds.size), afterScreenUpdates: true) {
-                view.layer.render(in: context.cgContext)
-            }
+            // Layer rendering drops materials and hosted content. Fail instead of exporting
+            // a visually different fallback when UIKit cannot capture the composited hierarchy.
+            didRender = view.drawHierarchy(
+                in: CGRect(origin: .zero, size: view.bounds.size), afterScreenUpdates: false
+            )
         }
+        return didRender ? image : nil
     }
 
     static func compose(
