@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 import UIKit
 
@@ -84,3 +85,5 @@ public enum YCLongScreenshotError: LocalizedError {
         }
     }
 }
+
+#endif

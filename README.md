@@ -20,7 +20,9 @@
 
 ```swift
 import SwiftUI
+#if DEBUG
 import YCLongScreenshotKit
+#endif
 
 @main
 struct MyApp: App {
@@ -28,14 +30,14 @@ struct MyApp: App {
         WindowGroup {
             AppRootView()
                 #if DEBUG
-                .ycLongScreenshotOnShake()
+                .ycLongScreenshotOnShake(showsCaptureButton: true)
                 #endif
         }
     }
 }
 ```
 
-真机摇一摇；模拟器菜单 `Device → Shake`（各版本菜单名称可能不同）。截取完成后弹出「保存到相册 / 分享 · AirDrop」。**只有 Debug 构建带摇动入口**；Release 不会自动启用该功能。
+真机摇一摇；模拟器菜单 `Device → Shake`（各版本菜单名称可能不同）。右上角备用按钮可通过 `showsCaptureButton` 开启，截图时自动隐藏。截取完成后可分享 / AirDrop，声明相册写入用途后也可直接保存相册。整个库实现仅在 Debug 编译。
 
 如需模拟器里点击按钮测试：
 
@@ -116,7 +118,7 @@ xcrun simctl list devices available
 6. **滚动会真实改变页面位置**，结束后恢复；它不是完全无副作用的离屏渲染。具有 `onAppear` 分页、副作用或滚动联动的页面，请使用专门的屏幕截图测试数据源。
 7. 长图**默认 1.5x**，可选 1–3x；超高图可能被系统相册或第三方分享目标拒绝。默认临时 PNG 不主动清理；App 可以在分享完成后删除 `result.fileURL`。
 8. SwiftUI 的摇一摇实现基于 responder chain：当键盘/TextField 占据第一响应者时，可能无法收到 Shake。UIKit 应用可使用 `YCShakeCaptureWindow`；SwiftUI 应保留备用按钮，不建议采用全局 method swizzling。
-9. `#if DEBUG` 应包住**宿主 App 的触发入口**；SPM 模块本身不会在 Release 自动消失。如果明确要求产品内使用，需要自己决定权限和入口。
+9. 包产品为静态库，全部实现均由 `#if DEBUG` 包裹，Release 编译时模块为空。宿主同时使用 `#if DEBUG` 包裹 import 与调用。Xcode 的包依赖关系仍存在，Release 会生成空模块构建产物，但最终 App 不包含截图实现或嵌入式截图框架。发布前应检查实际 Release 产物。
 
 ## 维护目录
 

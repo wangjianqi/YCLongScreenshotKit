@@ -1,3 +1,4 @@
+#if DEBUG
 import SwiftUI
 import UIKit
 
@@ -56,3 +57,5 @@ open class YCShakeCaptureWindow: UIWindow {
         super.motionEnded(motion, with: event)
     }
 }
+
+#endif

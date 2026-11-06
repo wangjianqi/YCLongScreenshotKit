@@ -1,17 +1,22 @@
+#if DEBUG
 import SwiftUI
 
 /// Attach once to the root TabView / root navigation shell.
 /// Do not ship with production builds: guard usage using `#if DEBUG` in the host app.
 public extension View {
     func ycLongScreenshotOnShake(
-        configuration: YCLongScreenshotConfiguration = .init()
+        configuration: YCLongScreenshotConfiguration = .init(),
+        showsCaptureButton: Bool = false
     ) -> some View {
-        modifier(YCLongScreenshotDebugModifier(configuration: configuration))
+        modifier(YCLongScreenshotDebugModifier(
+            configuration: configuration, showsCaptureButton: showsCaptureButton
+        ))
     }
 }
 
 private struct YCLongScreenshotDebugModifier: ViewModifier {
     let configuration: YCLongScreenshotConfiguration
+    let showsCaptureButton: Bool
 
     @State private var lastResult: YCLongScreenshotResult?
     @State private var showCompletion = false
@@ -31,12 +36,28 @@ private struct YCLongScreenshotDebugModifier: ViewModifier {
             .onReceive(NotificationCenter.default.publisher(
                 for: YCLongScreenshotTrigger.captureRequested
             )) { _ in startCapture() }
+            .overlay(alignment: .topTrailing) {
+                if showsCaptureButton {
+                    Button(action: startCapture) {
+                        Image(systemName: "camera.viewfinder")
+                            .padding(10)
+                            .background(.regularMaterial, in: Circle())
+                    }
+                    .accessibilityLabel("生成开发长截图")
+                    .accessibilityIdentifier("debug.longScreenshot")
+                    .padding(.trailing, 12)
+                    .opacity(isWorking ? 0 : 1)
+                    .disabled(isWorking)
+                }
+            }
             .confirmationDialog(
                 "长截图已完成",
                 isPresented: $showCompletion,
                 titleVisibility: .visible
             ) {
-                Button("保存到相册") { savePhoto() }
+                if Bundle.main.object(forInfoDictionaryKey: "NSPhotoLibraryAddUsageDescription") != nil {
+                    Button("保存到相册") { savePhoto() }
+                }
                 Button("分享 / AirDrop") { showShareSheet = true }
                 Button("取消", role: .cancel) {}
             } message: {
@@ -93,3 +114,5 @@ private struct YCLongScreenshotDebugModifier: ViewModifier {
         }
     }
 }
+
+#endif

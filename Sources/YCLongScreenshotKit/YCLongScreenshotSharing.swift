@@ -1,3 +1,4 @@
+#if DEBUG
 import Photos
 import SwiftUI
 import UIKit
@@ -26,6 +27,9 @@ public struct YCLongScreenshotShareSheet: UIViewControllerRepresentable {
         let controller = UIActivityViewController(
             activityItems: [image], applicationActivities: nil
         )
+        if Bundle.main.object(forInfoDictionaryKey: "NSPhotoLibraryAddUsageDescription") == nil {
+            controller.excludedActivityTypes = [.saveToCameraRoll]
+        }
         // Hosted by SwiftUI's sheet, which supplies the appropriate iPad presentation.
         return controller
     }
@@ -34,3 +38,5 @@ public struct YCLongScreenshotShareSheet: UIViewControllerRepresentable {
         _ uiViewController: UIActivityViewController, context: Context
     ) {}
 }
+
+#endif

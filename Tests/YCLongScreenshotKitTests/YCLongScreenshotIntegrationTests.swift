@@ -9,10 +9,10 @@ final class YCLongScreenshotIntegrationTests: XCTestCase {
         let vc = UIViewController()
         window.rootViewController = vc
         vc.view.frame = window.bounds
-        vc.view.backgroundColor = .systemBackground
+        vc.view.backgroundColor = .systemTeal
 
         let scroll = UIScrollView(frame: CGRect(x: 0, y: 80, width: 390, height: 550))
-        scroll.backgroundColor = .systemBackground
+        scroll.backgroundColor = .clear
         scroll.contentSize = CGSize(width: 390, height: 1900)
         vc.view.addSubview(scroll)
         for index in 0..<19 {
@@ -23,11 +23,21 @@ final class YCLongScreenshotIntegrationTests: XCTestCase {
         window.makeKeyAndVisible()
         scroll.setContentOffset(CGPoint(x: 0, y: 110), animated: false)
 
+        // A transparent scroll view must retain the background composited by its parent.
+        let reference = try XCTUnwrap(YCCaptureRendering.snapshot(of: window, scale: 1))
+        let sampleRect = CGRect(x: 2, y: 120, width: 4, height: 4)
+        let expectedBackground = try XCTUnwrap(reference.cgImage?.cropping(to: sampleRect))
+
         let result = try await YCLongScreenshotKit.shared.capture(
             scrollView: scroll,
             configuration: .init(scale: 1, settleDelay: 0.03)
         )
 
+        let actualBackground = try XCTUnwrap(result.image.cgImage?.cropping(to: sampleRect))
+        XCTAssertEqual(
+            UIImage(cgImage: actualBackground).pngData(),
+            UIImage(cgImage: expectedBackground).pngData()
+        )
         XCTAssertTrue(result.isLongScreenshot)
         XCTAssertTrue(result.includesPageChrome)
         XCTAssertEqual(result.image.size.width, 390, accuracy: 1)

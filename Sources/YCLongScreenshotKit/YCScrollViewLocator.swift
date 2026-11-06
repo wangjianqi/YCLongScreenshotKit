@@ -1,3 +1,4 @@
+#if DEBUG
 import UIKit
 
 @MainActor
@@ -29,7 +30,10 @@ enum YCScrollViewLocator {
 
     static func visibleFrame(of view: UIView, in window: UIWindow) -> CGRect {
         guard view.window === window else { return .null }
-        var result = view.convert(view.bounds, to: window).intersection(window.bounds)
+        // SwiftUI scroll views can extend beneath navigation and floating tab bars.
+        // Stitch only the unobscured safe-area viewport, retaining the bars once.
+        let visibleBounds = view.bounds.inset(by: view.safeAreaInsets)
+        var result = view.convert(visibleBounds, to: window).intersection(window.bounds)
         var parent = view.superview
         while let ancestor = parent, ancestor !== window {
             if ancestor.clipsToBounds {
@@ -64,3 +68,5 @@ enum YCScrollViewLocator {
         return visibility * depthBonus
     }
 }
+
+#endif

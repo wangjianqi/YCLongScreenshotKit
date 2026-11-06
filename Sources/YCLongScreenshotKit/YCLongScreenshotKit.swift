@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 import UIKit
 
@@ -87,12 +88,10 @@ public final class YCLongScreenshotKit {
             try await settle(view: scrollView, delay: configuration.settleDelay)
         }
         let viewport = YCScrollViewLocator.visibleFrame(of: scrollView, in: window)
-        let actualFrame = scrollView.convert(scrollView.bounds, to: window)
-        let sourceRect = viewport.offsetBy(dx: -actualFrame.minX, dy: -actualFrame.minY)
         guard !viewport.isNull, viewport.width >= 1, viewport.height >= 1,
-              sourceRect.minX >= -1, sourceRect.minY >= -1,
-              sourceRect.maxX <= scrollView.bounds.width + 1,
-              sourceRect.maxY <= scrollView.bounds.height + 1 else {
+              viewport.minX >= 0, viewport.minY >= 0,
+              viewport.maxX <= window.bounds.width,
+              viewport.maxY <= window.bounds.height else {
             throw YCLongScreenshotError.invalidGeometry
         }
 
@@ -145,7 +144,8 @@ public final class YCLongScreenshotKit {
                        height: estimatedHeight), configuration: configuration
             )
 
-            guard let frame = YCCaptureRendering.snapshot(of: scrollView, scale: configuration.scale) else {
+            // Capture the composited window so ancestor backgrounds and materials survive.
+            guard let frame = YCCaptureRendering.snapshot(of: window, scale: configuration.scale) else {
                 throw YCLongScreenshotError.renderingFailed
             }
             bufferedPixels += Double(frame.size.width * frame.size.height
@@ -176,7 +176,7 @@ public final class YCLongScreenshotKit {
         let composed = try YCCaptureRendering.compose(
             scrollFrames: images,
             positions: positions,
-            visibleSourceRect: sourceRect,
+            visibleSourceRect: viewport,
             visibleWindowRect: viewport,
             windowImage: windowImage ?? firstFrame,
             windowSize: window.bounds.size,
@@ -232,3 +232,5 @@ public final class YCLongScreenshotKit {
         view.layoutIfNeeded()
     }
 }
+
+#endif

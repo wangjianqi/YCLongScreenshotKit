@@ -1,3 +1,4 @@
+#if DEBUG
 import UIKit
 
 @MainActor
@@ -112,3 +113,5 @@ enum YCCaptureRendering {
     }
 }
 
+
+#endif

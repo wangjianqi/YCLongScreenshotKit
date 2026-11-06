@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 
 /// A non-overlapping strip read from a viewport frame and placed in the final image.
@@ -43,3 +44,5 @@ enum YCScrollSlicePlanner {
         return slices
     }
 }
+
+#endif

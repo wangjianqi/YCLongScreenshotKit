@@ -5,7 +5,7 @@ let package = Package(
     name: "YCLongScreenshotKit",
     platforms: [.iOS(.v16)],
     products: [
-        .library(name: "YCLongScreenshotKit", targets: ["YCLongScreenshotKit"])
+        .library(name: "YCLongScreenshotKit", type: .static, targets: ["YCLongScreenshotKit"])
     ],
     targets: [
         .target(name: "YCLongScreenshotKit"),
