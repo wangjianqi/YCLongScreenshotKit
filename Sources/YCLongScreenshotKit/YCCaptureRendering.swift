@@ -63,8 +63,10 @@ enum YCCaptureRendering {
                     source: CGRect(x: 0, y: 0, width: windowSize.width, height: top),
                     destination: CGPoint(x: 0, y: 0), context: context.cgContext
                 )
+                // The bottom safe area can contain scrolling content behind translucent UI.
+                // Use the final viewport so the beginning of the list is not appended again.
                 drawPiece(
-                    windowImage,
+                    scrollFrames.last ?? windowImage,
                     source: CGRect(x: 0, y: visibleWindowRect.maxY,
                                    width: windowSize.width, height: bottom),
                     destination: CGPoint(x: 0, y: top + totalScrollHeight),
